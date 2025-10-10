@@ -10,7 +10,6 @@ export const metadata: Metadata = {
   title: "Vira Web - Marketing Digital e Tecnologia",
   description:
     "Especialistas em tráfego pago, criação de sites, design e gestão de Google Meu Negócio. Transforme sua presença digital.",
-  generator: "v0.app",
 }
 
 export default function RootLayout({
