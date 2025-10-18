@@ -17,9 +17,9 @@ export default function Portfolio() {
   return (
    <section className="relative bg-white py-16 ">
 
-      <div className="container mx-auto px-6 ">
+      <div className="container mx-auto px-6 md:block hidden">
         <Link href="/">
-          <Button variant="ghost" className="mb-8 border-2 md:inline hidden hover:border-secondary border-transparent hover:bg-  text-muted-foreground cursor-pointer">
+          <Button variant="ghost" className="mb-8 border-2  hover:border-secondary border-transparent hover:bg-  text-muted-foreground cursor-pointer">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Voltar para a pagina inicial
           </Button>
