@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { ArrowRight, Sparkles } from "lucide-react"
+import { ArrowRight, Sparkles, ArrowLeft } from "lucide-react"
 import { Footer } from "@/components/footer"
 import Link from "next/link"
 import {  Palette, Globe } from "lucide-react"
