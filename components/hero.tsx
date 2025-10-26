@@ -61,13 +61,13 @@ export function Hero() {
             <div className="transition-all duration-300 hover:scale-102 w-full md:w-1/3">
               <div className="bg-white rounded-lg w-90 cursor-pointer overflow-hidden shadow-lg border border-border hover:shadow-md transition-shadow">
                 <div className="aspect-[12/16] bg-white relative overflow-hidden">
-                  <iframe src="/portfolio" className="bg-cover w-full h-[81%] cursor-pointer">
+                  <iframe src="https://gds.viraweb.online/" className="bg-cover w-full h-[81%] cursor-pointer">
                   </iframe>
                   <div className="p-4 md:p-6 items-center flex justify-center ">
-                    <a href="/portfolio">
+                    <a href="https://gds.viraweb.online/">
   
                       <button className="bg-secondary  hover:scale-105 cursor-pointer duration-300 text-secondary-foreground px-15 py-4 rounded-lg font-semibold hover:bg-secondary/90 transition-colors inline-flex items-center gap-2 shadow-sm">
-                        Portfólio
+                        Conheça o nossso G.D.S
   
                       </button>
                     </a>
