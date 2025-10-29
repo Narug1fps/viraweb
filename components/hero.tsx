@@ -67,7 +67,7 @@ export function Hero() {
                     <a href="https://gds.viraweb.online/">
   
                       <button className="bg-secondary  hover:scale-105 cursor-pointer duration-300 text-secondary-foreground px-15 py-4 rounded-lg font-semibold hover:bg-secondary/90 transition-colors inline-flex items-center gap-2 shadow-sm">
-                        Conheça o nossso G.D.S
+                        Conheça o nossso G.D.C
   
                       </button>
                     </a>
