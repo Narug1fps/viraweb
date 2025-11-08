@@ -73,7 +73,7 @@ export function Footer() {
               <li className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-[#3396d3]" />
                 <a href="mailto:contato@viraweb.com.br" className="hover:text-primary transition-colors">
-                  viraweb.online@gmail.com
+                  suporte@viraweb.online
                 </a>
               </li>
               <li className="flex items-center gap-2">
