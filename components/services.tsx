@@ -35,14 +35,6 @@ const services = [
     features: ["Otimização de perfil", "Gestão de avaliações", "Posts regulares", "Análise de métricas"],
     url: "https://wa.me/556292466109?text=olá%2C%20gostaria%20de%20fazer%20um%20orçamento%20da%20ferramenta%20google%20meu%20negócio!",
   },
-  {
-    icon: Bot,
-    title: "Assistente de mensagens",
-    description:
-      "Assistente virtual que tem por função responder seus clientes, facilitando o atendimento de sua empresa.",
-    features: ["Respostas rápidas e automáticas", "Atendimento personalizado", "Disponibilidade 24/7", "Organização das conversas"],
-    url: "https://wa.me/556292466109?text=olá%2C%20gostaria%20de%20fazer%20um%20orçamento%20da%20ferramenta%20assistente%20de%20mensagens!%0A",
-  },
 ]
 export function Services() {
   return (
