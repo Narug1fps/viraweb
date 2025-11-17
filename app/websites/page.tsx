@@ -36,7 +36,7 @@ const sites: website[] = [
     title: "Site para uma empresa de lixas",
     image: "https://libras-test.vercel.app",
     description: "Site de uma empresa de lixas com mais de 40 anos de experiência",
-    url: "https://libras-test.vercel.app",
+    url: "https://libraslixas.com.br",
   },
 ]; 
 
