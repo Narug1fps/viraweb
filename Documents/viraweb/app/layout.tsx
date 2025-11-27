@@ -9,19 +9,18 @@ import "./globals.css"
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://viraweb.online"
 
 export const metadata: Metadata = {
-  title: "Vira Web - Marketing Digital e Tecnologia",
+  title: "Vira Web - Criação de Sites",
   description:
     "Especialistas em tráfego pago, criação de sites, design e gestão de Google Meu Negócio. Transforme sua presença digital.",
   metadataBase: new URL(SITE_URL),
   keywords: [
-    "marketing digital",
     "tráfego pago",
     "criação de sites",
     "design",
     "Google Meu Negócio",
   ],
   openGraph: {
-    title: "Vira Web - Marketing Digital e Tecnologia",
+    title: "Vira Web - Criação de Sites",
     description:
       "Especialistas em tráfego pago, criação de sites, design e gestão de Google Meu Negócio.",
     url: SITE_URL,
@@ -39,7 +38,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Vira Web - Marketing Digital e Tecnologia",
+    title: "Vira Web - Criação de Sites",
     description:
       "Especialistas em tráfego pago, criação de sites, design e gestão de Google Meu Negócio.",
   },

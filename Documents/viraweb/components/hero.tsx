@@ -52,8 +52,12 @@ export function Hero() {
             <ScrollAnimate className="transition-all duration-300 hover:scale-102 w-full md:w-1/3" delay={0.12}>
               <div className="bg-white rounded-lg w-90 cursor-pointer overflow-hidden shadow-lg border border-border hover:shadow-md transition-shadow">
                 <div className="aspect-[12/16] bg-white relative overflow-hidden">
-                  <iframe src="https://gdc.viraweb.online/" className="bg-cover w-full h-[81%] cursor-pointer">
-                  </iframe>
+                  <iframe
+                    src="https://gdc.viraweb.online/"
+                    title="G.D.C. preview - Vira Web"
+                    loading="lazy"
+                    className="bg-cover w-full h-[81%] cursor-pointer"
+                  />
                   <div className="p-4 md:p-6 items-center flex justify-center ">
                     <a href="https://gdc.viraweb.online/">
 

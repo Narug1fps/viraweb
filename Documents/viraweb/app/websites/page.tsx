@@ -77,8 +77,8 @@ export default function WebSites() {
           className="transition-all duration-300 hover:scale-[1.02]"
         >
           <div className="bg-card rounded-lg overflow-hidden shadow-sm border border-border hover:shadow-md transition-shadow flex flex-col">
-            <div className="aspect-[12/16] bg-muted relative overflow-hidden">
-              <iframe src={site.image} className=" bg-cover w-full h-full "></iframe>
+              <div className="aspect-[12/16] bg-muted relative overflow-hidden">
+              <iframe src={site.image} title={site.title} loading="lazy" className=" bg-cover w-full h-full "></iframe>
             </div>
             <div className="p-4 md:p-6 flex flex-col justify-between flex-1">
               <div>
