@@ -13,7 +13,7 @@ export function Navbar() {
   const [categories, setCategories] = useState<Category[]>([])
   const [allContents, setAllContents] = useState<Content[]>([])
   const [query, setQuery] = useState("")
-  const [suggestions, setSuggestions] = useState<Content[]>([])
+  const [suggestions, setSuggestions] = useState<Array<Content | Category>>([])
 
   useEffect(() => {
     const abort = new AbortController()
@@ -49,20 +49,32 @@ export function Navbar() {
     }
   }, [])
 
-  // debounce query -> suggestions
+  // debounce query -> suggestions (search both contents and categories)
   useEffect(() => {
     if (!query) return setSuggestions([])
     const t = setTimeout(() => {
       const q = query.toLowerCase()
-      setSuggestions(
-        allContents.filter(c => 
-          c.title.toLowerCase().includes(q) || 
-          (c.description || "").toLowerCase().includes(q)
-        ).slice(0, 6)
+
+      const contentMatches = allContents.filter(c =>
+        c.title.toLowerCase().includes(q) ||
+        (c.description || "").toLowerCase().includes(q)
       )
+
+      const categoryMatches = categories.filter(cat =>
+        cat.name.toLowerCase().includes(q) ||
+        (cat.description || "").toLowerCase().includes(q)
+      )
+
+      // Merge results, prioritizing contents then categories, limit to 6
+      const merged: Array<Content | Category> = [
+        ...contentMatches.slice(0, 4),
+        ...categoryMatches.slice(0, 4),
+      ].slice(0, 6)
+
+      setSuggestions(merged)
     }, 180)
     return () => clearTimeout(t)
-  }, [query, allContents])
+  }, [query, allContents, categories])
 
   return (
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-accent/20">
@@ -134,20 +146,30 @@ export function Navbar() {
               {/* Suggestions dropdown */}
               {suggestions.length > 0 && (
                 <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-accent/20 rounded-xl shadow-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top duration-200">
-                  {suggestions.map((s, idx) => (
-                    <Link
-                      key={s.id}
-                      href={`/content/${s.slug}`}
-                      className={`flex items-start gap-3 px-4 py-3 text-sm text-foreground hover:bg-accent/10 transition ${idx !== suggestions.length - 1 ? 'border-b border-accent/10' : ''}`}
-                      onClick={() => { setSearchOpen(false); setQuery(""); setSuggestions([]) }}
-                    >
-                      <Search className="w-4 h-4 mt-0.5 flex-shrink-0 text-accent/60" />
-                      <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-foreground">{s.title}</div>
-                        {s.description && <div className="text-xs text-foreground/50 line-clamp-1 mt-1">{s.description}</div>}
-                      </div>
-                    </Link>
-                  ))}
+                  {suggestions.map((s, idx) => {
+                    const isContent = (s as Content).title !== undefined
+                    const title = isContent ? (s as Content).title : (s as Category).name
+                    const desc = isContent ? (s as Content).description : (s as Category).description
+                    const href = isContent ? `/content/${(s as Content).slug}` : `/#category-${(s as Category).slug}`
+
+                    return (
+                      <Link
+                        key={s.id}
+                        href={href}
+                        className={`flex items-start gap-3 px-4 py-3 text-sm text-foreground hover:bg-accent/10 transition ${idx !== suggestions.length - 1 ? 'border-b border-accent/10' : ''}`}
+                        onClick={() => { setSearchOpen(false); setQuery(""); setSuggestions([]) }}
+                      >
+                        <Search className="w-4 h-4 mt-0.5 flex-shrink-0 text-accent/60" />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="font-semibold text-foreground">{title}</div>
+                            <div className="text-xs text-foreground/50">{isContent ? 'Conteúdo' : 'Categoria'}</div>
+                          </div>
+                          {desc && <div className="text-xs text-foreground/50 line-clamp-1 mt-1">{desc}</div>}
+                        </div>
+                      </Link>
+                    )
+                  })}
                 </div>
               )}
             </div>

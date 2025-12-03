@@ -1,4 +1,4 @@
-import { getSupabaseService } from "@/lib/supabase/server";
+import { getSupabaseServer, getSupabaseService } from "@/lib/supabase/server";
 import { type NextRequest, NextResponse } from "next/server";
 
 const STORAGE_BUCKET = process.env.SUPABASE_STORAGE_BUCKET || "images";
@@ -111,9 +111,12 @@ export async function POST(request: NextRequest) {
 ------------------------------------------------------- */
 export async function GET(request: NextRequest) {
   try {
-    const service = getSupabaseService();
+    // Prefer the service-role client (bypasses RLS) when available.
+    // Fall back to the regular server client so public reads still work
+    // when `SUPABASE_SERVICE_ROLE_KEY` is not configured (dev environment).
+    let service: any = getSupabaseService();
     if (!service) {
-      return NextResponse.json({ error: "Service unavailable" }, { status: 500 });
+      service = await getSupabaseServer();
     }
 
     const url = new URL(request.url);

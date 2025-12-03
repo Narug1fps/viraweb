@@ -72,7 +72,10 @@ export async function POST(request: NextRequest) {
 
     // Upload image to Supabase Storage
     const fileName = `hero-${Date.now()}-${imageFile.name.replace(/[^a-zA-Z0-9.-]/g, "")}`
-    const buffer = await imageFile.arrayBuffer()
+    const arrayBuffer = await imageFile.arrayBuffer()
+    // Convert ArrayBuffer to a Node-friendly Buffer/Uint8Array before upload.
+    // Passing a raw ArrayBuffer can produce a 400 from the Storage API.
+    const buffer = typeof Buffer !== 'undefined' ? Buffer.from(arrayBuffer) : new Uint8Array(arrayBuffer)
 
     const { error: uploadError } = await supabaseClient.storage
       .from("images")

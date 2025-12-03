@@ -19,7 +19,7 @@ export function AffiliationsSection() {
           <a href="https://www.instagram.com/febrapsi/br/" target="_blank" rel="noopener noreferrer">
               <div className="w-48 h-48 flex items-center justify-center p-4 bg-white rounded-lg shadow-md border border-border hover:shadow-xl transition transform group-hover:scale-105">
                 <img
-                  src="/febrapsi.jpg"
+                  src="/febrapsi.png"
                   alt="FEBRAPSI - Federação Brasileira de Psicanálise"
                   className="max-w-full max-h-full object-contain"
                   onError={(e) => {

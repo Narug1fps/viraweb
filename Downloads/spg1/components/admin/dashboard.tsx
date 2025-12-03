@@ -363,19 +363,16 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   /* -------- Slider images (highlights) -------- */
   const fetchSliderImages = async () => {
     try {
-      const supabase = getSupabaseClient() as any
-      const { data, error } = await supabase
-        .from('slider_images')
-        .select('*')
-        .order('display_order', { ascending: true })
-      
-      if (error) {
-        console.error('Error fetching slider images:', error)
+      const res = await fetchWithAuth('/api/highlights/images')
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        console.error('Error fetching slider images (server):', err)
         setSliderImages([])
         return
       }
-      
-      setSliderImages(Array.isArray(data) ? data : [])
+
+      const data = await res.json().catch(() => [])
+      setSliderImages(Array.isArray(data) ? data.sort((a, b) => a.display_order - b.display_order) : [])
     } catch (error) {
       console.error('Error fetching slider images:', error)
       setSliderImages([])
@@ -390,23 +387,20 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
     setLoading(true)
     try {
-      const supabase = getSupabaseClient() as any
-      const STORAGE_BUCKET = process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || 'images'
-      
-      // Upload file to storage
-      const fileName = `slider/${Date.now()}_${sliderImageFile.name.replace(/[^a-zA-Z0-9.-]/g, '')}`
-      const { error: upErr } = await supabase.storage.from(STORAGE_BUCKET).upload(fileName, sliderImageFile as File, { contentType: sliderImageFile.type, upsert: false })
-      if (upErr) throw upErr
-      
-      const { data: urlData } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(fileName)
-      const publicUrl = urlData.publicUrl
+      // Use server endpoint to handle uploads (service role) and DB inserts.
+      const form = new FormData()
+      form.append('image', sliderImageFile as File)
+      form.append('display_order', String(sliderImages.length))
 
-      // Insert slider image row into database
-      const { error: insErr } = await supabase
-        .from('slider_images')
-        .insert([{ image_url: publicUrl, display_order: sliderImages.length }])
-      
-      if (insErr) throw insErr
+      const res = await fetchWithAuth('/api/highlights/images', {
+        method: 'POST',
+        body: form,
+      })
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err?.error || 'Failed to upload slider image')
+      }
 
       toast({ title: 'Sucesso', description: 'Imagem adicionada ao slider.' })
       fetchSliderImages()
@@ -427,43 +421,17 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       title: 'Confirmar exclusão',
       description: 'Clique em Confirmar para deletar esta imagem do slider.',
       action: (
-        <ToastAction
+              <ToastAction
           altText="Confirmar exclusão"
           className="border-red-500 bg-red-500 hover:bg-red-600 text-white"
           onClick={async () => {
             try {
-              const supabase = getSupabaseClient() as any
-              
-              // Fetch image row to get image_url for storage cleanup
-              const { data: imgRow, error: fetchErr } = await supabase
-                .from('slider_images')
-                .select('image_url')
-                .eq('id', id)
-                .single()
-              
-              if (fetchErr) throw fetchErr
-              
-              // Delete from storage if image_url exists
-              if (imgRow?.image_url) {
-                try {
-                  const STORAGE_BUCKET = process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || 'images'
-                  const url = new URL(imgRow.image_url)
-                  const filePath = url.pathname.split('/storage/v1/object/public/images/')[1]
-                  if (filePath) {
-                    await supabase.storage.from(STORAGE_BUCKET).remove([decodeURIComponent(filePath)])
-                  }
-                } catch (e) {
-                  console.warn('Failed to parse/delete storage file:', e)
-                }
+              // Ask server to delete the slider image (server handles storage cleanup)
+              const res = await fetchWithAuth(`/api/highlights/images/${encodeURIComponent(String(id))}`, { method: 'DELETE' })
+              if (!res.ok && res.status !== 204) {
+                const err = await res.json().catch(() => ({}))
+                throw new Error(err?.error || 'Failed to delete slider image')
               }
-              
-              // Delete from database
-              const { error: delErr } = await supabase
-                .from('slider_images')
-                .delete()
-                .eq('id', id)
-              
-              if (delErr) throw delErr
 
               fetchSliderImages()
             } catch (error) {
@@ -483,11 +451,13 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
   const handleUpdateSliderImageOrder = async () => {
     try {
-      const supabase = getSupabaseClient() as any
-      const updates = sliderImages.map((img, idx) => supabase.from('slider_images').update({ display_order: idx }).eq('id', img.id))
-      const results = await Promise.all(updates)
-      const hasError = results.some((r: any) => r.error)
-      if (hasError) throw new Error('Failed to reorder some images')
+      // Send the new order to the server which updates `hero_slider_images` with service role
+      const payload = { images: sliderImages.map((img, idx) => ({ id: img.id, display_order: idx })) }
+      const res = await fetchWithAuth('/api/highlights/images/reorder', { method: 'PUT', body: JSON.stringify(payload) })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err?.error || 'Failed to update image order')
+      }
       toast({ title: 'Sucesso', description: 'Ordem das imagens atualizada.' })
       fetchSliderImages()
     } catch (error) {
@@ -780,18 +750,30 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
               <div className="space-y-3">
                 {sliderImages.length > 0 ? (
                   sliderImages.map((image, idx) => (
-                    <div key={image.id} className="flex items-center gap-4 p-3 bg-muted/50 rounded-lg border border-border">
-                      <div className="flex-shrink-0 w-20 h-20 rounded overflow-hidden border border-border">
+                    <div key={image.id} className="flex flex-col md:flex-row items-start md:items-center gap-4 p-3 bg-muted/50 rounded-lg border border-border">
+                      <div className="flex-shrink-0 w-full md:w-20 h-40 md:h-20 rounded overflow-hidden border border-border">
                         <img src={image.image_url} alt={`Slider ${idx + 1}`} className="w-full h-full object-cover" />
                       </div>
-                      <div className="flex-1">
+
+                      <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium">Posição: {idx + 1}</p>
-                        <p className="text-xs text-foreground/60 mt-1 truncate">{image.image_url}</p>
+                        <p className="text-xs text-foreground/60 mt-1 break-all md:truncate max-w-full overflow-hidden">{image.image_url}</p>
                       </div>
-                      <div className="flex gap-2">
-                        {idx > 0 && <Button onClick={() => { const newImages = [...sliderImages]; [newImages[idx], newImages[idx - 1]] = [newImages[idx - 1], newImages[idx]]; setSliderImages(newImages) }} size="sm" variant="outline">↑</Button>}
-                        {idx < sliderImages.length - 1 && <Button onClick={() => { const newImages = [...sliderImages]; [newImages[idx], newImages[idx + 1]] = [newImages[idx + 1], newImages[idx]]; setSliderImages(newImages) }} size="sm" variant="outline">↓</Button>}
-                        <Button onClick={() => handleDeleteSliderImage(image.id)} size="sm" variant="outline" className="text-red-500 border-red-500 hover:bg-red-500 hover:text-white"><Trash2 className="w-4 h-4" /></Button>
+
+                      <div className="flex-shrink-0 flex gap-2 mt-3 md:mt-0">
+                        {idx > 0 && (
+                          <Button onClick={() => { const newImages = [...sliderImages]; [newImages[idx], newImages[idx - 1]] = [newImages[idx - 1], newImages[idx]]; setSliderImages(newImages) }} size="sm" variant="outline" className="px-2 py-1">
+                            ↑
+                          </Button>
+                        )}
+                        {idx < sliderImages.length - 1 && (
+                          <Button onClick={() => { const newImages = [...sliderImages]; [newImages[idx], newImages[idx + 1]] = [newImages[idx + 1], newImages[idx]]; setSliderImages(newImages) }} size="sm" variant="outline" className="px-2 py-1">
+                            ↓
+                          </Button>
+                        )}
+                        <Button onClick={() => handleDeleteSliderImage(image.id)} size="sm" variant="outline" className="text-red-500 border-red-500 hover:bg-red-500 hover:text-white px-2 py-1">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </div>
                     </div>
                   ))
